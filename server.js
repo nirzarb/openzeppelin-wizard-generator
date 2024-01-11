@@ -34,7 +34,10 @@ app.post('/ut-contract', async (req, res) => {
 		const contract = generateUt(params, options.rewards)
 		res.status(200).json({ contract })
 	} catch (error) {
-		res.status(501)
+		res.status(500).json({
+			code: 500,
+			message: error,
+		})
 	}
 })
 
@@ -53,7 +56,10 @@ app.post('/gt-contract', async (req, res) => {
 
 		res.status(200).json({ contract })
 	} catch (error) {
-		res.status(501)
+		res.status(500).json({
+			code: 500,
+			message: error,
+		})
 	}
 })
 

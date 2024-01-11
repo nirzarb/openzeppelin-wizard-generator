@@ -131,76 +131,77 @@ const generateStakingFunctions = () => {
 }
 
 const generateContract = (
-  params,
-  staking,
-  rewards,
-  minStakingDuration,
-  rewardMultiplier,
-  votingThreshold
+	params,
+	staking,
+	rewards,
+	minStakingDuration,
+	rewardMultiplier,
+	votingThreshold
 ) => {
-  if (params.votes === false) staking = false;
-  if (staking) params.votes = true;
+	try {
+		if (params.votes === false) staking = false
+		if (staking) params.votes = true
 
-  let contract = erc20.print(params);
+		let contract = erc20.print(params)
 
-  const lastCurlyBraceIndex = contract.lastIndexOf('}');
-  let modifiedContract = '';
+		const lastCurlyBraceIndex = contract.lastIndexOf('}')
+		let modifiedContract = ''
 
-  if (rewards) {
-    modifiedContract =
-      contract.slice(0, lastCurlyBraceIndex) +
-      generateRewardMultiplier(rewards, rewardMultiplier) +
-      '\n' +
-      generateRewardsEvent() +
-      '\n' +
-      generateTransferFunction(
-        params,
-        staking,
-        rewards,
-        minStakingDuration,
-        rewardMultiplier
-      ) +
-      '\n' +
-      contract.slice(lastCurlyBraceIndex);
-  } else {
-    modifiedContract =
-      contract.slice(0, lastCurlyBraceIndex) +
-      generateTransferFunction(
-        params,
-        staking,
-        rewards,
-        minStakingDuration,
-        rewardMultiplier
-      ) +
-      '\n' +
-      contract.slice(lastCurlyBraceIndex);
-  }
+		if (rewards) {
+			modifiedContract =
+				contract.slice(0, lastCurlyBraceIndex) +
+				generateRewardMultiplier(rewards, rewardMultiplier) +
+				'\n' +
+				generateRewardsEvent() +
+				'\n' +
+				generateTransferFunction(
+					params,
+					staking,
+					rewards,
+					minStakingDuration,
+					rewardMultiplier
+				) +
+				'\n' +
+				contract.slice(lastCurlyBraceIndex)
+		} else {
+			modifiedContract =
+				contract.slice(0, lastCurlyBraceIndex) +
+				generateTransferFunction(
+					params,
+					staking,
+					rewards,
+					minStakingDuration,
+					rewardMultiplier
+				) +
+				'\n' +
+				contract.slice(lastCurlyBraceIndex)
+		}
 
-  const finalContract = modifiedContract.replace(
-    '/// @custom:oz-upgrades-unsafe-allow constructor',
-    ''
-  );
+		const finalContract = modifiedContract.replace(
+			'/// @custom:oz-upgrades-unsafe-allow constructor',
+			''
+		)
 
-  if (staking) {
-    const firstCurlyBraceIndex = finalContract.indexOf('{');
+		if (staking) {
+			const firstCurlyBraceIndex = finalContract.indexOf('{')
 
-    let stakingContract =
-      finalContract.slice(0, firstCurlyBraceIndex + 1) +
-      generateStakingMapping(minStakingDuration, votingThreshold) +
-      generateCanWithdrawModifier() +
-      finalContract.slice(firstCurlyBraceIndex + 1);
+			let stakingContract =
+				finalContract.slice(0, firstCurlyBraceIndex + 1) +
+				generateStakingMapping(minStakingDuration, votingThreshold) +
+				generateCanWithdrawModifier() +
+				finalContract.slice(firstCurlyBraceIndex + 1)
 
-    const lastCurlyBraceIndex = stakingContract.lastIndexOf('}');
+			const lastCurlyBraceIndex = stakingContract.lastIndexOf('}')
 
-    let fnStakingContract =
-      stakingContract.slice(0, lastCurlyBraceIndex) +
-      generateStakingFunctions() +
-      '\n' +
-      finalContract.slice(lastCurlyBraceIndex);
+			let fnStakingContract =
+				stakingContract.slice(0, lastCurlyBraceIndex) +
+				generateStakingFunctions() +
+				'\n' +
+				finalContract.slice(lastCurlyBraceIndex)
 
-    let updatedTransfer = fnStakingContract.replace(
-      'function transfer(address to, uint256 amount) public override {',
-      `function transfer(address to, uint256 amount) public {
+			let updatedTransfer = fnStakingContract.replace(
+				'function transfer(address to, uint256 amount) public override {',
+				`function transfer(address to, uint256 amount) public {
         require(
             amount <= balanceOf(msg.sender) - getStakedBalance(msg.sender),
             "Insufficient Balance or your balance is staked."
@@ -217,16 +218,18 @@ const generateContract = (
 
         return true;
       }`
-    );
+			)
 
-    contract = updatedTransfer;
-    return fnStakingContract;
-  }
+			contract = updatedTransfer
+			return fnStakingContract
+		}
 
-  return finalContract;
-};
+		return finalContract
+	} catch (err) {
+		console.error(err)
+	}
+}
 
-module.exports = { generateContract };
-
+module.exports = { generateContract }
 
 module.exports = { generateContract }

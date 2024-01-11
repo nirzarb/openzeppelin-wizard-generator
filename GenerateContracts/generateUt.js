@@ -22,22 +22,26 @@ const generateTransferFunction = (rewards) => {
 }
 
 const generateUt = (params, rewards) => {
-	const contract = erc20.print(params)
+	try {
+		const contract = erc20.print(params)
 
-	const lastCurlyBraceIndex = contract.lastIndexOf('}')
+		const lastCurlyBraceIndex = contract.lastIndexOf('}')
 
-	const modifiedContract =
-		contract.slice(0, lastCurlyBraceIndex) +
-		generateTransferFunction(rewards) +
-		'\n' +
-		contract.slice(lastCurlyBraceIndex)
+		const modifiedContract =
+			contract.slice(0, lastCurlyBraceIndex) +
+			generateTransferFunction(rewards) +
+			'\n' +
+			contract.slice(lastCurlyBraceIndex)
 
-	const finalContract = modifiedContract.replace(
-		'/// @custom:oz-upgrades-unsafe-allow constructor',
-		''
-	)
+		const finalContract = modifiedContract.replace(
+			'/// @custom:oz-upgrades-unsafe-allow constructor',
+			''
+		)
 
-	return finalContract
+		return finalContract
+	} catch (err) {
+		console.error(err)
+	}
 }
 
 module.exports = { generateUt }
